@@ -1,8 +1,83 @@
-{% extends 'core/base.html' %}
+{% comment %} {% extends 'core/base.html' %}
 {% block content %}
 <h2>Post</h2>
 <form method="post">{% csrf_token %}
   {{ form.as_p }}
   <button>Guardar</button>
 </form>
+{% endblock %} {% endcomment %}
+
+
+{% extends 'core/base.html' %}
+{% block title %}Crear nuevo post{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 mx-auto" style="max-width: 800px;">
+    <div class="card-header bg-dark text-white">
+      <h3 class="mb-0">📝 Crear nuevo Post</h3>
+    </div>
+
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="id_titulo" class="form-label fw-bold">Título</label>
+          {{ form.titulo|add_class:"form-control" }}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_categoria" class="form-label fw-bold">Categoría</label>
+          {{ form.categoria|add_class:"form-select" }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Contenido público</label>
+          <div id="editorPublico" class="form-control" style="height: 200px;"></div>
+          <textarea name="_contenido" id="contenido" hidden></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Contenido premium</label>
+          <div id="editorPremium" class="form-control" style="height: 200px;"></div>
+          <textarea name="_contenido_premium" id="contenido_premium" hidden></textarea>
+        </div>
+
+        <div class="text-end">
+          <button type="submit" class="btn btn-success px-4">
+            💾 Guardar Post
+          </button>
+          <a href="{% url 'post_list' %}" class="btn btn-secondary px-4">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Quill editor -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Inicializamos los editores
+    const editorPublico = new Quill('#editorPublico', {
+      theme: 'snow',
+      placeholder: 'Escribe el contenido público aquí...',
+    });
+
+    const editorPremium = new Quill('#editorPremium', {
+      theme: 'snow',
+      placeholder: 'Escribe el contenido premium (solo visible para usuarios Premium o Admin)...',
+    });
+
+    // Copiamos contenido al enviar el formulario
+    document.querySelector('form').addEventListener('submit', () => {
+      document.getElementById('contenido').value = editorPublico.root.innerHTML;
+      document.getElementById('contenido_premium').value = editorPremium.root.innerHTML;
+    });
+  });
+</script>
 {% endblock %}

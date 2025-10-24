@@ -1,8 +1,7 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<p>>>>>>>>>>>>>>>>>{{user.profileuser.role}}</p>
-{% if user.is_authenticated and user.profile.role == 'user' %}
-  <p><em>🔒 Este post tiene contenido exclusivo para usuarios Premium.</em></p>
+{% if user.is_authenticated and user.profileuser.role == 'user' %}
+  <p style={color:'red'}><em>🔒 Este post tiene contenido exclusivo para usuarios Premium.</em></p>
 {% endif %}
 
 <h2>{{ object.titulo }}</h2>
@@ -16,9 +15,6 @@
     <hr><em>No hay contenido premium disponible.</em>
   {% endif %}
 {% endif %}
-{% if user.profileuser.role == 'premium' or user.profileuser.role == 'admin' %}
-  <hr><h4>Sección Premium</h4>
-  <p>{{ object.contenido_premium }}</p>
-{% endif %}
+
 {% endblock %}
 
