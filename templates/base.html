@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>{% block title %}Blog{% endblock %}</title></head>
+<body>
+<header>
+  {% if user.is_authenticated %}
+    Hola, {{ user.username }} ({{ user.profile.role }}) | <a href="/admin/">Admin</a>
+  {% else %}
+    <a href="/admin/login/">Entrar</a>
+  {% endif %}
+  <hr>
+</header>
+<main>
+  
+  {% block content %}
+  {% endblock %}
+</main>
+</body>
+</html>
