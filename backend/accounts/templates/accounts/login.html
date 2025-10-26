@@ -1,0 +1,30 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 400px;">
+  <h2 class="text-center mb-4">Iniciar sesión</h2>
+
+  {% if form.errors %}
+    <div class="alert alert-danger">
+      Usuario o contraseña incorrectos.
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'login' %}" class="border p-4 rounded shadow-sm bg-light">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_username" class="form-label">Usuario</label>
+      {{ form.username }}
+    </div>
+    <div class="mb-3">
+      <label for="id_password" class="form-label">Contraseña</label>
+      {{ form.password }}
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Entrar</button>
+  </form>
+
+  <p class="text-center mt-3">
+    <a href="/">Volver al inicio</a>
+  </p>
+</div>
+{% endblock %}

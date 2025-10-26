@@ -1,0 +1,107 @@
+{% extends 'core/base.html' %}
+{% load form_filters %}
+
+{% block title %}{{ view.object.pk|yesno:"Editar Post,Nuevo Post" }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 mx-auto" style="max-width: 850px;">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">
+        {{ view.object.pk|yesno:"✏️ Editar Post,📝 Crear nuevo Post" }}
+      </h3>
+      <a href="{% url 'core:post_list' %}" class="btn btn-outline-light btn-sm">← Volver</a>
+    </div>
+
+    <div class="card-body p-4">
+      <form method="post" enctype="multipart/form-data" id="postForm" action="">
+        {% csrf_token %}
+
+        <!-- Título -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Título</label>
+          {{ form.titulo|add_class:"form-control" }}
+        </div>
+
+        <!-- Categoría -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Categoría</label>
+          {{ form.categoria|add_class:"form-select" }}
+        </div>
+
+        <!-- Subcategorías -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Subcategorías</label>
+          {{ form.subcategorias|add_class:"form-select" }}
+        </div>
+
+        <!-- Hashtags -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Hashtags</label>
+          {{ form.hashtags|add_class:"form-select" }}
+        </div>
+
+        <!-- Contenido público -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Contenido público</label>
+          <div id="editorPublico" class="form-control" style="height: 220px;"></div>
+          <!-- 🔥 usamos instance, no initial -->
+          <textarea name="contenido" id="contenido" hidden>{{ form.instance.contenido|safe }}</textarea>
+        </div>
+
+        <!-- Contenido premium -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Contenido Premium</label>
+          <div id="editorPremium" class="form-control" style="height: 220px;"></div>
+          <textarea name="contenido_premium" id="contenido_premium" hidden>{{ form.instance.contenido_premium|safe }}</textarea>
+        </div>
+
+        <div class="text-end mt-4">
+          <button type="submit" id="guardarBtn" class="btn btn-success px-4">
+            💾 Guardar Post
+          </button>
+          <a href="{% url 'core:post_list' %}" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🧩 Editor de texto activo.");
+
+  const editorPublico = new Quill("#editorPublico", {
+    theme: "snow",
+    placeholder: "Escribe el contenido público aquí...",
+  });
+
+  const editorPremium = new Quill("#editorPremium", {
+    theme: "snow",
+    placeholder: "Escribe el contenido premium aquí...",
+  });
+
+  // 🔹 Precargar contenido existente en modo edición
+  const contenido = document.getElementById("contenido").value;
+  const contenidoPremium = document.getElementById("contenido_premium").value;
+
+  if (contenido && contenido.trim() !== "") {
+    editorPublico.root.innerHTML = contenido;
+  }
+  if (contenidoPremium && contenidoPremium.trim() !== "") {
+    editorPremium.root.innerHTML = contenidoPremium;
+  }
+
+  // 🔹 Copiar valores al enviar formulario
+  document.getElementById("postForm").addEventListener("submit", () => {
+    document.getElementById("contenido").value = editorPublico.root.innerHTML;
+    document.getElementById("contenido_premium").value = editorPremium.root.innerHTML;
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ object.titulo }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  <!-- Tarjeta principal del post -->
+  <div class="card shadow-lg border-0 mx-auto" style="max-width: 850px;">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">{{ object.titulo }}</h3>
+      <small class="text-light">{{ object.fecha_creacion|date:"d M Y" }}</small>
+    </div>
+
+    <div class="card-body">
+      <!-- Contenido público -->
+      <h5 class="fw-bold">📰 Contenido público</h5>
+      <div class="p-3 border rounded bg-light mb-4">
+        {{ object.contenido|safe }}
+      </div>
+
+      <!-- Contenido premium -->
+      {% if user.is_authenticated and user.profileuser.role == 'premium' or user.profileuser.role == 'admin' %}
+        {% if object.contenido_premium %}
+          <h5 class="fw-bold text-warning">💎 Contenido Premium</h5>
+          <div class="p-3 border rounded bg-warning-subtle">
+            {{ object.contenido_premium|safe }}
+          </div>
+        {% else %}
+          <p class="text-muted"><em>No hay contenido premium disponible.</em></p>
+        {% endif %}
+      {% else %}
+        {% if object.contenido_premium %}
+          <div class="alert alert-warning mt-3">
+            🔒 <strong>Contenido premium:</strong> inicia sesión como usuario <em>premium</em> o <em>admin</em> para verlo.
+          </div>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="card-footer bg-light text-end">
+      <a href="{% url 'core:post_list' %}" class="btn btn-secondary btn-sm me-2">← Volver</a>
+
+      {% if user.is_authenticated and user.profileuser.role == 'admin' %}
+        <a href="{% url 'core:post_edit' object.pk %}" class="btn btn-outline-primary btn-sm me-2">
+          ✏️ Editar
+        </a>
+        <a href="{% url 'core:post_delete' object.pk %}" class="btn btn-outline-danger btn-sm">
+          🗑️ Eliminar
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

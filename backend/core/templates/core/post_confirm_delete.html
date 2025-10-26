@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block title %}Eliminar Post{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  <div class="card shadow border-0 mx-auto" style="max-width: 500px;">
+    <div class="card-header bg-danger text-white">
+      <h4>🗑️ Confirmar eliminación</h4>
+    </div>
+    <div class="card-body">
+      <p>¿Estás seguro de que deseas eliminar <strong>{{ object.titulo }}</strong>?</p>
+      <form method="post">{% csrf_token %}
+        <button type="submit" class="btn btn-danger px-4">Sí, eliminar</button>
+        <a href="{% url 'core:post_list' %}" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

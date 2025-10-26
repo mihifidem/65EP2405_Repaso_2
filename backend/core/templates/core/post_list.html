@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}Listado de Posts{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>📚 Lista de Posts</h2>
+    {% if user.is_authenticated and user.profile.role == 'admin' %}
+      <a href="{% url 'core:post_create' %}" class="btn btn-success">➕ Nuevo Post</a>
+    {% endif %}
+  </div>
+
+  <div class="list-group">
+    {% for post in posts %}
+      <a href="{% url 'core:post_detail' post.pk %}" class="list-group-item list-group-item-action">
+        <h5 class="mb-1">{{ post.titulo }}</h5>
+        <small class="text-muted">{{ post.fecha_creacion|date:"d M Y" }}</small>
+      </a>
+    {% empty %}
+      <p>No hay posts disponibles.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
