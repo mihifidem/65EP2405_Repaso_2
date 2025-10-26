@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
+import os
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,6 +20,7 @@ INSTALLED_APPS = [
     # App propia
     "core",
     'accounts',
+
 ]
 
 MIDDLEWARE = [
@@ -71,9 +74,19 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # === Archivos estáticos ===
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_URL = '/static/'
+
+# Archivos estáticos durante desarrollo
+STATICFILES_DIRS = [
+    BASE_DIR / 'core' / 'static',  # ✅ apunta a la carpeta static de tu app
+]
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

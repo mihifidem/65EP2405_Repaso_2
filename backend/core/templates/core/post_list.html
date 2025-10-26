@@ -1,33 +1,130 @@
 {% extends 'core/base.html' %}
+{% load static %}
+
 {% block title %}Listado de Posts{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  {% if messages %}
-    {% for message in messages %}
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      </div>
-    {% endfor %}
-  {% endif %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">📚 Listado de Posts</h2>
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>📚 Lista de Posts</h2>
     {% if user.is_authenticated and user.profile.role == 'admin' %}
-      <a href="{% url 'core:post_create' %}" class="btn btn-success">➕ Nuevo Post</a>
+      <a href="{% url 'post_create' %}" class="btn btn-primary">
+        ➕ Crear nuevo Post
+      </a>
     {% endif %}
   </div>
 
-  <div class="list-group">
-    {% for post in posts %}
-      <a href="{% url 'core:post_detail' post.pk %}" class="list-group-item list-group-item-action">
-        <h5 class="mb-1">{{ post.titulo }}</h5>
-        <small class="text-muted">{{ post.fecha_creacion|date:"d M Y" }}</small>
-      </a>
-    {% empty %}
-      <p>No hay posts disponibles.</p>
-    {% endfor %}
+  <!-- 🔎 Formulario de filtros -->
+ <form id="filterForm" class="row g-3 mb-4 p-3 bg-light border rounded shadow-sm">
+  <!-- 🔍 Buscar -->
+  <div class="col-md-3">
+    <label for="search" class="form-label fw-semibold">Buscar</label>
+    <input type="text" name="search" id="search"
+           value="{{ request.GET.search }}"
+           placeholder="Buscar por título..."
+           class="form-control">
+  </div>
+
+  <!-- 📚 Categoría -->
+  <div class="col-md-3">
+    <label for="categoria" class="form-label fw-semibold">Categoría</label>
+    <select name="categoria" id="categoria" class="form-select">
+      <option value="">Todas</option>
+      {% for cat in categorias %}
+        <option value="{{ cat.id }}" {% if request.GET.categoria == cat.id|stringformat:"s" %}selected{% endif %}>
+          {{ cat.titulo }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- 🏷️ Subcategoría -->
+  <div class="col-md-3">
+    <label for="subcategoria" class="form-label fw-semibold">Subcategoría</label>
+    <select name="subcategoria" id="subcategoria" class="form-select">
+      <option value="">Todas</option>
+      {% for sub in subcategorias %}
+        <option value="{{ sub.id }}" {% if request.GET.subcategoria == sub.id|stringformat:"s" %}selected{% endif %}>
+          {{ sub.titulo }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- ⚙️ Orden -->
+  <div class="col-md-2">
+    <label for="orden" class="form-label fw-semibold">Ordenar por</label>
+    <select name="orden" id="orden" class="form-select">
+      <option value="">Más recientes</option>
+      <option value="titulo" {% if request.GET.orden == 'titulo' %}selected{% endif %}>Título (A-Z)</option>
+      <option value="-titulo" {% if request.GET.orden == '-titulo' %}selected{% endif %}>Título (Z-A)</option>
+      <option value="fecha_creacion" {% if request.GET.orden == 'fecha_creacion' %}selected{% endif %}>Fecha ↑</option>
+      <option value="-fecha_creacion" {% if request.GET.orden == '-fecha_creacion' %}selected{% endif %}>Fecha ↓</option>
+    </select>
+  </div>
+<br/>
+  <!-- 🔘 Botones -->
+  <div class="col-md-1 d-flex align-items-end justify-content-end gap-2">
+    {% comment %} <button type="submit" class="btn btn-success w-100">Filtrar</button> {% endcomment %}
+  
+    <button type="button" id="resetBtn" class="btn btn-secondary w-100">Reset</button>
+  </div>
+</form>
+
+
+  <!-- 🔄 Contenedor del listado dinámico -->
+  <div id="postListContainer">
+    {% include 'core/_post_list_partial.html' %}
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('filterForm');
+    const container = document.getElementById('postListContainer');
+    const resetBtn = document.getElementById('resetBtn');
+    const inputs = form.querySelectorAll('input, select');
+
+    // 🔄 Función para actualizar dinámicamente los resultados
+    const updateList = () => {
+      const params = new URLSearchParams(new FormData(form));
+      fetch(`?${params.toString()}`, {
+        headers: { "x-requested-with": "XMLHttpRequest" }
+      })
+      .then(response => response.json())
+      .then(data => {
+        container.innerHTML = data.html;
+      })
+      .catch(err => console.error('Error al actualizar:', err));
+    };
+
+    // ✅ Evitar recarga completa del formulario
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      updateList();
+    });
+
+    // ✅ Búsqueda en tiempo real (solo si escribes 2+ letras)
+    const searchInput = document.getElementById('search');
+    let typingTimer;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(updateList, 400); // espera 0.4s
+    });
+
+    // ✅ Cambio de categoría u orden → actualización inmediata
+    inputs.forEach(el => {
+      el.addEventListener('change', updateList);
+    });
+
+    // ✅ Botón de reset
+    resetBtn.addEventListener('click', () => {
+      form.reset();
+      updateList();
+    });
+  });
+</script>
 {% endblock %}

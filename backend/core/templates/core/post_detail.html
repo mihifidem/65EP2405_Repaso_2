@@ -10,7 +10,13 @@
       <h3 class="mb-0">{{ object.titulo }}</h3>
       <small class="text-light">{{ object.fecha_creacion|date:"d M Y" }}</small>
     </div>
-
+ {% if object.imagen %}
+        <div class="text-center my-3">
+          <img src="{{ object.imagen.url }}" alt="{{ object.titulo }}"
+               class="img-thumbnail shadow-sm"
+               style="max-width: 800px; height: auto;">
+        </div>
+      {% endif %}
     <div class="card-body">
       <!-- Contenido público -->
       <h5 class="fw-bold">📰 Contenido público</h5>

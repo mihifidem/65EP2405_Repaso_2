@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block title %}Nuevo Hashtag{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-warning fw-bold">➕ Crear Hashtag</div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="text-end">
+          <button type="submit" class="btn btn-success">Guardar</button>
+          <a href="{% url 'core:post_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

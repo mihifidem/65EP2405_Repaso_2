@@ -1,6 +1,8 @@
 {% extends 'core/base.html' %}
 {% load form_filters %}
 
+{% load static %}
+
 {% block title %}{{ view.object.pk|yesno:"Editar Post,Nuevo Post" }}{% endblock %}
 
 {% block content %}
@@ -14,38 +16,66 @@
     </div>
 
     <div class="card-body p-4">
-      <form method="post" enctype="multipart/form-data" id="postForm" action="">
+      <form method="post" enctype="multipart/form-data" id="postForm">
         {% csrf_token %}
 
         <!-- Título -->
         <div class="mb-3">
           <label class="form-label fw-bold">Título</label>
-          {{ form.titulo|add_class:"form-control" }}
+          {{ form.titulo }}
         </div>
 
         <!-- Categoría -->
         <div class="mb-3">
           <label class="form-label fw-bold">Categoría</label>
-          {{ form.categoria|add_class:"form-select" }}
+          {{ form.categoria }}
         </div>
 
         <!-- Subcategorías -->
         <div class="mb-3">
           <label class="form-label fw-bold">Subcategorías</label>
-          {{ form.subcategorias|add_class:"form-select" }}
+          {{ form.subcategorias }}
         </div>
 
         <!-- Hashtags -->
         <div class="mb-3">
           <label class="form-label fw-bold">Hashtags</label>
-          {{ form.hashtags|add_class:"form-select" }}
+          {{ form.hashtags }}
+        </div>
+
+        <!-- Imagen -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Imagen del Post</label>
+          {{ form.imagen }}
+
+          {% if form.instance.imagen %}
+            <div class="mt-3 text-center">
+              <p class="text-muted small mb-1">📸 Imagen actual:</p>
+              <img
+                id="previewImagen"
+                src="{{ form.instance.imagen.url }}"
+                alt="Imagen actual"
+                class="img-fluid rounded shadow-sm"
+                style="max-height:250px;"
+              >
+            </div>
+          {% else %}
+            <div class="mt-3 text-center">
+              <img
+                id="previewImagen"
+                src="{% static 'core/img/placeholder.jpg' %}"
+                alt="Vista previa"
+                class="img-fluid rounded shadow-sm"
+                style="max-height:250px; display:none;"
+              >
+            </div>
+          {% endif %}
         </div>
 
         <!-- Contenido público -->
         <div class="mb-3">
           <label class="form-label fw-bold">Contenido público</label>
           <div id="editorPublico" class="form-control" style="height: 220px;"></div>
-          <!-- 🔥 usamos instance, no initial -->
           <textarea name="contenido" id="contenido" hidden>{{ form.instance.contenido|safe }}</textarea>
         </div>
 
@@ -69,6 +99,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- Quill -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
@@ -76,6 +107,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🧩 Editor de texto activo.");
 
+  // Inicializar editores Quill
   const editorPublico = new Quill("#editorPublico", {
     theme: "snow",
     placeholder: "Escribe el contenido público aquí...",
@@ -86,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     placeholder: "Escribe el contenido premium aquí...",
   });
 
-  // 🔹 Precargar contenido existente en modo edición
+  // Precargar contenido existente en modo edición
   const contenido = document.getElementById("contenido").value;
   const contenidoPremium = document.getElementById("contenido_premium").value;
 
@@ -97,11 +129,32 @@ document.addEventListener("DOMContentLoaded", () => {
     editorPremium.root.innerHTML = contenidoPremium;
   }
 
-  // 🔹 Copiar valores al enviar formulario
+  // Copiar contenido Quill al enviar formulario
   document.getElementById("postForm").addEventListener("submit", () => {
     document.getElementById("contenido").value = editorPublico.root.innerHTML;
     document.getElementById("contenido_premium").value = editorPremium.root.innerHTML;
   });
+
+  // 🔍 Vista previa de imagen seleccionada
+  const inputImagen = document.getElementById("id_imagen");
+  const preview = document.getElementById("previewImagen");
+
+  if (inputImagen) {
+    inputImagen.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          preview.src = ev.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.src = "";
+        preview.style.display = "none";
+      }
+    });
+  }
 });
 </script>
 {% endblock %}

@@ -51,8 +51,19 @@ class Categoria(BaseEntidad):
 # 🏷️ Subcategoría (N - M con Post)
 # ============================================================
 class SubCategoria(BaseEntidad):
+    # 🔗 Relación 1-N: una categoría puede tener muchas subcategorías
+    categoria = models.ForeignKey(
+        Categoria,
+        on_delete=models.CASCADE,
+        related_name="subcategorias"
+    )
+
     class Meta:
         verbose_name_plural = "Subcategorías"
+
+    def __str__(self):
+        return f"{self.titulo} ({self.categoria.titulo})"
+
 
 
 # ============================================================
@@ -75,6 +86,8 @@ class Post(BaseEntidad):
         SubCategoria, blank=True, related_name="posts"
     )
     hashtags = models.ManyToManyField(Hashtag, blank=True, related_name="posts")
+    imagen = models.ImageField(upload_to='posts/', blank=True, null=True)  # 👈 NUEVO CAMPO
+
 
     # 🔒 Encapsulamiento: atributos protegidos
     _contenido = models.TextField()
