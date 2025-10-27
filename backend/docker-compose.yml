@@ -1,14 +1,12 @@
-version: '3.9'
+version: "3.9"
 
 services:
   web:
     build: .
-    container_name: django_app
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py collectstatic --noinput &&
-             python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/app
+    container_name: django-sqlite
+    env_file: .env
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+    command: python manage.py runserver 0.0.0.0:8000

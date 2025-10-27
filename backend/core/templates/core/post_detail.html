@@ -27,7 +27,7 @@
       <!-- Contenido premium -->
       {% if user.is_authenticated and user.profileuser.role == 'premium' or user.profileuser.role == 'admin' %}
         {% if object.contenido_premium %}
-          <h5 class="fw-bold text-warning">💎 Contenido Premium</h5>
+          <h5 class="fw-bold text-warning">Contenido Premium</h5>
           <div class="p-3 border rounded bg-warning-subtle">
             {{ object.contenido_premium|safe }}
           </div>

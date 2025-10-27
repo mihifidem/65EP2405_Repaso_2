@@ -1,23 +1,35 @@
-# 1️⃣ Usamos una imagen base de Python
-FROM python:3.11-slim
+# Imagen base ligera
+FROM python:3.12-slim
 
-# 2️⃣ Evita archivos temporales innecesarios
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Configuración básica
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# 3️⃣ Creamos una carpeta dentro del contenedor
+# Carpeta de trabajo
 WORKDIR /app
 
-# 4️⃣ Copiamos los requisitos e instalamos dependencias
-COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# Instala dependencias del sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libsqlite3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# 5️⃣ Copiamos todo el proyecto dentro del contenedor
-COPY . /app/
+# Copia e instala las dependencias Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 6️⃣ Exponemos el puerto que usará Django
+# Copia el código del proyecto
+COPY . .
+
+# Copia el entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Crea usuario sin privilegios
+RUN useradd -m appuser
+USER appuser
+
 EXPOSE 8000
 
-# 7️⃣ Comando para ejecutar Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["gunicorn", "blogproj.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
