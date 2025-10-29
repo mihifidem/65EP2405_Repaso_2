@@ -12,5 +12,5 @@ urlpatterns = [
     path("categoria/new/", crear_categoria, name="categoria_create"),
     path("subcategoria/new/", crear_subcategoria, name="subcategoria_create"),
     path("hashtag/new/", crear_hashtag, name="hashtag_create"),
-]
 
+]
