@@ -15,7 +15,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 from .forms import CategoriaForm, SubCategoriaForm, HashtagForm
-
+from django.views.decorators.http import require_POST, require_http_methods
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 # ✅ Crear categoría
 @login_required
@@ -155,3 +157,86 @@ class PostDeleteView(AdminRequiredMixin, DeleteView):
         messages.success(self.request, "🗑️ Post eliminado correctamente.")
         return super().delete(request, *args, **kwargs)
 
+# ============================================================
+# 🧠 AJAX: comprobar o crear hashtag
+# ============================================================
+@csrf_exempt
+@require_POST
+@login_required
+def check_or_create_hashtag(request):
+    """
+    Si el hashtag existe → color verde
+    Si no existe → se crea (solo admin) → color naranja
+    """
+    nombre = request.POST.get("nombre", "").strip()
+    post_id = request.POST.get("post_id")
+
+    if not nombre:
+        return JsonResponse({"error": "Etiqueta vacía"}, status=400)
+
+    hashtag = None
+    creado = False
+
+    try:
+        hashtag = Hashtag.objects.get(titulo__iexact=nombre)
+    except Hashtag.DoesNotExist:
+        # Solo admin puede crear hashtags nuevos
+        if is_admin(request.user):
+            hashtag = Hashtag.objects.create(titulo=nombre)
+            creado = True
+        else:
+            return JsonResponse({"error": "Solo un administrador puede crear nuevas etiquetas."}, status=403)
+
+    # Asociar hashtag al post si se pasa un post_id
+    if post_id:
+        try:
+            post = Post.objects.get(id=post_id)
+            post.hashtags.add(hashtag)
+        except Post.DoesNotExist:
+            pass
+
+    return JsonResponse({
+        "id": hashtag.id,
+        "nombre": hashtag.titulo,
+        "color": "orange" if creado else "green",
+        "creado": creado,
+    })
+
+
+# ============================================================
+# 🧹 AJAX: eliminar hashtag completamente
+# ============================================================
+@csrf_exempt
+@require_http_methods(["DELETE"])
+@login_required
+def delete_hashtag(request, hashtag_id):
+    """
+    Elimina el hashtag completamente (solo admin).
+    """
+    if not is_admin(request.user):
+        return JsonResponse({"error": "No autorizado"}, status=403)
+
+    try:
+        Hashtag.objects.get(id=hashtag_id).delete()
+        return JsonResponse({"success": True})
+    except Hashtag.DoesNotExist:
+        return JsonResponse({"error": "No encontrado"}, status=404)
+
+
+# ============================================================
+# ➖ AJAX: eliminar solo del post
+# ============================================================
+@csrf_exempt
+@require_http_methods(["DELETE"])
+@login_required
+def remove_hashtag_from_post(request, post_id, hashtag_id):
+    """
+    Elimina la relación Post–Hashtag sin borrar el hashtag global.
+    """
+    try:
+        post = Post.objects.get(id=post_id)
+        hashtag = Hashtag.objects.get(id=hashtag_id)
+        post.hashtags.remove(hashtag)
+        return JsonResponse({"success": True})
+    except (Post.DoesNotExist, Hashtag.DoesNotExist):
+        return JsonResponse({"error": "No encontrado"}, status=404)

@@ -14,8 +14,10 @@
       
       <!-- 💬 Contenido -->
       <div class="card-body d-flex flex-column">
-        <h5 class="card-title fw-bold text-truncate">{{ post.titulo }}</h5>
-        <p class="card-text small text-muted mb-2">{{ post.categoria.titulo }}{% if post.subcategoria %} → {{ post.subcategoria.titulo }}{% endif %}</p>
+        <h5 class="card-title fw-bold ">{{ post.titulo }}</h5>
+        <p class="card-text small text-muted mb-2">
+          {{ post.categoria.titulo }}
+          {% if post.subcategoria %} → {{ post.subcategoria.titulo }}{% endif %}</p>
         
         <p class="card-text text-secondary small flex-grow-1">
           {{ post.contenido|safe|truncatechars:100 }}

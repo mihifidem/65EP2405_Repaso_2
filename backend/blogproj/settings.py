@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     "core",
     'accounts',
     'drf_spectacular',
+      'ckeditor',
+    'ckeditor_uploader',
 
 ]
 
@@ -138,3 +140,59 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/favicon-32x32.png",
     "REDOC_DIST": "https://cdn.jsdelivr.net/npm/redoc@2.1.3/bundles/redoc.standalone.js",
 }
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_IMAGE_BACKEND = "pillow"
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Format', 'Font', 'FontSize', 'TextColor', 'BGColor'],
+            ['Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink', 'Anchor'],
+            ['Image', 'Table', 'HorizontalRule', 'Blockquote'],
+            ['CodeSnippet', 'Source'],
+            ['Undo', 'Redo'],
+            ['Maximize'],
+        ],
+        'extraPlugins': ','.join([
+            'codesnippet',     # Bloques de código con resaltado
+            'font',            # Cambiar fuente
+            'colorbutton',     # Colores
+            'justify',         # Alineación
+            'uploadimage',     # Subida de imágenes
+            'autogrow',        # Autoajuste del tamaño
+            'clipboard',       # Mejora pegado
+            'format',          # Permite seleccionar formatos (h1,h2,pre,…)
+        ]),
+        # 🧠 Estas tres líneas son cruciales para que NO formatee mal el código:
+        'allowedContent': True,            # No limpia etiquetas <pre>, <code>, <br>
+        'forcePasteAsPlainText': False,    # Permite pegar HTML y respetar formato original
+        'enterMode': 2,                    # Inserta <br> en lugar de <p> al presionar Enter
+
+        'height': 400,
+        'width': '100%',
+        'autoGrow_minHeight': 250,
+        'autoGrow_maxHeight': 800,
+        'codeSnippet_theme': 'monokai_sublime',
+        'removeDialogTabs': 'image:advanced;link:advanced',
+
+        'font_names': (
+            'Arial/Arial, Helvetica, sans-serif;'
+            'Courier New/Courier New, Courier, monospace;'
+            'Georgia/Georgia, serif;'
+            'Tahoma/Tahoma, Geneva, sans-serif;'
+            'Times New Roman/Times New Roman, Times, serif;'
+            'Verdana/Verdana, Geneva, sans-serif'
+        ),
+
+        'fontSize_sizes': (
+            '10/10px;11/11px;12/12px;14/14px;16/16px;18/18px;20/20px;22/22px;'
+            '24/24px;26/26px;28/28px;32/32px;36/36px;48/48px;'
+        ),
+    }
+}
+
+

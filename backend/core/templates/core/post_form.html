@@ -1,160 +1,210 @@
 {% extends 'core/base.html' %}
-{% load form_filters %}
-
 {% load static %}
-
-{% block title %}{{ view.object.pk|yesno:"Editar Post,Nuevo Post" }}{% endblock %}
-
 {% block content %}
-<div class="container py-5">
-  <div class="card shadow-lg border-0 mx-auto" style="max-width: 850px;">
-    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-      <h3 class="mb-0">
-        {{ view.object.pk|yesno:"✏️ Editar Post,📝 Crear nuevo Post" }}
-      </h3>
-      <a href="{% url 'core:post_list' %}" class="btn btn-outline-light btn-sm">← Volver</a>
-    </div>
 
+<div class="container py-4">
+  <div class="card shadow-sm border-0 rounded-4">
     <div class="card-body p-4">
+
+      <h2 class="mb-4 text-center">
+        {% if object %}
+          ✏️ Editar Post
+        {% else %}
+          📝 Crear nuevo Post
+        {% endif %}
+      </h2>
+
       <form method="post" enctype="multipart/form-data" id="postForm">
         {% csrf_token %}
 
-        <!-- Título -->
+        <!-- ===============================
+             Campos del formulario
+             =============================== -->
         <div class="mb-3">
           <label class="form-label fw-bold">Título</label>
           {{ form.titulo }}
         </div>
 
-        <!-- Categoría -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Categoría</label>
-          {{ form.categoria }}
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Categoría</label>
+            {{ form.categoria }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Subcategorías</label>
+            {{ form.subcategorias }}
+          </div>
         </div>
 
-        <!-- Subcategorías -->
         <div class="mb-3">
-          <label class="form-label fw-bold">Subcategorías</label>
-          {{ form.subcategorias }}
-        </div>
-
-        <!-- Hashtags -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Hashtags</label>
-          {{ form.hashtags }}
-        </div>
-
-        <!-- Imagen -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Imagen del Post</label>
+          <label class="form-label fw-bold">Imagen principal</label>
           {{ form.imagen }}
-
-          {% if form.instance.imagen %}
-            <div class="mt-3 text-center">
-              <p class="text-muted small mb-1">📸 Imagen actual:</p>
-              <img
-                id="previewImagen"
-                src="{{ form.instance.imagen.url }}"
-                alt="Imagen actual"
-                class="img-fluid rounded shadow-sm"
-                style="max-height:250px;"
-              >
-            </div>
-          {% else %}
-            <div class="mt-3 text-center">
-              <img
-                id="previewImagen"
-                src="{% static 'core/img/placeholder.jpg' %}"
-                alt="Vista previa"
-                class="img-fluid rounded shadow-sm"
-                style="max-height:250px; display:none;"
-              >
-            </div>
-          {% endif %}
         </div>
 
-        <!-- Contenido público -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Contenido público</label>
-          <div id="editorPublico" class="form-control" style="height: 220px;"></div>
-          <textarea name="contenido" id="contenido" hidden>{{ form.instance.contenido|safe }}</textarea>
+<div class="mb-3">
+  <label class="form-label fw-bold">Contenido público</label>
+  {{ form.contenido }}
+</div>
+
+<div class="mb-3">
+  <label class="form-label fw-bold">Contenido premium</label>
+  {{ form.contenido_premium }}
+</div>
+
+        <!-- ===============================
+             Hashtags dinámicos
+             =============================== -->
+        <div class="mb-4">
+          <label for="hashtagInput" class="form-label fw-bold">Añadir hashtags</label>
+
+          <div class="input-group mb-2" style="max-width: 400px;">
+            <input
+              type="text"
+              id="hashtagInput"
+              class="form-control"
+              placeholder="Escribe un hashtag y presiona Enter"
+              style="border-radius: 0.5rem;"
+            >
+            <button id="addHashtagBtn" class="btn btn-primary" type="button">
+              ➕ Añadir
+            </button>
+          </div>
+
+          <small class="text-muted d-block mb-2">
+            🟢 Verde = existente | 🟠 Naranja = nuevo hashtag creado
+          </small>
+
+          <div id="hashtagsContainer"
+               class="d-flex flex-wrap gap-2 p-2 border rounded bg-light"
+               style="min-height: 60px;">
+            <span class="text-muted small">No hay hashtags añadidos aún.</span>
+          </div>
         </div>
 
-        <!-- Contenido premium -->
-        <div class="mb-3">
-          <label class="form-label fw-bold">Contenido Premium</label>
-          <div id="editorPremium" class="form-control" style="height: 220px;"></div>
-          <textarea name="contenido_premium" id="contenido_premium" hidden>{{ form.instance.contenido_premium|safe }}</textarea>
-        </div>
-
-        <div class="text-end mt-4">
-          <button type="submit" id="guardarBtn" class="btn btn-success px-4">
-            💾 Guardar Post
+        <!-- ===============================
+             Botones
+             =============================== -->
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-success px-4">
+            💾 Guardar
           </button>
-          <a href="{% url 'core:post_list' %}" class="btn btn-secondary px-4 ms-2">Cancelar</a>
+          <a href="{% url 'core:post_list' %}" class="btn btn-secondary px-4">
+            ⬅️ Volver
+          </a>
         </div>
+        {{ form.media }}
+
       </form>
+
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block extra_scripts %}
-<!-- Quill -->
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-
+<!-- ===============================
+     JavaScript — gestión hashtags
+     =============================== -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🧩 Editor de texto activo.");
+  const input = document.getElementById("hashtagInput");
+  const addBtn = document.getElementById("addHashtagBtn");
+  const container = document.getElementById("hashtagsContainer");
+  const postId = "{{ object.id|default:'' }}";
 
-  // Inicializar editores Quill
-  const editorPublico = new Quill("#editorPublico", {
-    theme: "snow",
-    placeholder: "Escribe el contenido público aquí...",
-  });
+  const addHashtag = () => {
+    const nombre = input.value.trim();
+    if (!nombre) return;
 
-  const editorPremium = new Quill("#editorPremium", {
-    theme: "snow",
-    placeholder: "Escribe el contenido premium aquí...",
-  });
+    fetch("{% url 'core:check_or_create_hashtag' %}", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({ nombre, post_id: postId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) return alert(data.error);
 
-  // Precargar contenido existente en modo edición
-  const contenido = document.getElementById("contenido").value;
-  const contenidoPremium = document.getElementById("contenido_premium").value;
+      const emptyText = container.querySelector(".text-muted");
+      if (emptyText) emptyText.remove();
 
-  if (contenido && contenido.trim() !== "") {
-    editorPublico.root.innerHTML = contenido;
-  }
-  if (contenidoPremium && contenidoPremium.trim() !== "") {
-    editorPremium.root.innerHTML = contenidoPremium;
-  }
+      const tag = document.createElement("span");
+      tag.classList.add("badge");
+      tag.style.fontSize = "1rem";
+      tag.style.padding = "0.6em 0.8em";
+      tag.style.borderRadius = "2rem";
+      tag.style.backgroundColor = data.color === "green" ? "#b2f2bb" : "#ffd8a8";
+      tag.textContent = "#" + data.nombre + " ";
 
-  // Copiar contenido Quill al enviar formulario
-  document.getElementById("postForm").addEventListener("submit", () => {
-    document.getElementById("contenido").value = editorPublico.root.innerHTML;
-    document.getElementById("contenido_premium").value = editorPremium.root.innerHTML;
-  });
+      // ❌ eliminar de BD
+      const delDB = document.createElement("button");
+      delDB.textContent = "❌";
+      delDB.classList.add("btn", "btn-sm", "btn-link", "p-0", "ms-1");
+      delDB.style.textDecoration = "none";
+      delDB.onclick = (e) => {
+        e.preventDefault();
+        fetch(`/ajax/delete_hashtag/${data.id}/`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+          }
+        }).then(() => tag.remove());
+      };
 
-  // 🔍 Vista previa de imagen seleccionada
-  const inputImagen = document.getElementById("id_imagen");
-  const preview = document.getElementById("previewImagen");
+      // ➖ eliminar solo del post
+      const delPost = document.createElement("button");
+      delPost.textContent = "➖";
+      delPost.classList.add("btn", "btn-sm", "btn-link", "p-0", "ms-1");
+      delPost.style.textDecoration = "none";
+      delPost.onclick = (e) => {
+        e.preventDefault();
+        fetch(`/ajax/remove_hashtag/${postId}/${data.id}/`, {
+          method: "DELETE",
+          headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+          }
+        }).then(() => tag.remove());
+      };
 
-  if (inputImagen) {
-    inputImagen.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          preview.src = ev.target.result;
-          preview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      } else {
-        preview.src = "";
-        preview.style.display = "none";
-      }
+      tag.appendChild(delDB);
+      tag.appendChild(delPost);
+      container.appendChild(tag);
+      input.value = "";
     });
-  }
+  };
+
+  addBtn.addEventListener("click", addHashtag);
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addHashtag();
+    }
+  });
 });
 </script>
+
+<!-- ===============================
+     Estilos adicionales (opcional)
+     =============================== -->
+<style>
+#hashtagsContainer .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.1s ease;
+}
+#hashtagsContainer .badge:hover {
+  transform: scale(1.05);
+}
+#hashtagsContainer button {
+  font-size: 0.9em;
+  color: #333;
+  cursor: pointer;
+}
+#hashtagsContainer button:hover {
+  color: #d6336c;
+}
+</style>
+
 {% endblock %}

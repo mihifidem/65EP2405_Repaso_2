@@ -68,3 +68,23 @@ form button:hover {
   transform: translateY(-4px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
+#hashtagsContainer .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.1s ease;
+}
+
+#hashtagsContainer .badge:hover {
+  transform: scale(1.05);
+}
+
+#hashtagsContainer button {
+  font-size: 0.9em;
+  color: #333;
+  cursor: pointer;
+}
+
+#hashtagsContainer button:hover {
+  color: #d6336c;
+}

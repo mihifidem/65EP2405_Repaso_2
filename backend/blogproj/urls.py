@@ -13,6 +13,8 @@ from django.urls import path
 
 
 urlpatterns = [
+        path("ckeditor/", include("ckeditor_uploader.urls")),
+
     path("admin/", admin.site.urls),
     path("", include("core.urls", namespace="core")),
     path("api/", include("core.api_urls")),
